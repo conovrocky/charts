@@ -1,0 +1,1616 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Monitors Kubernetes cluster using Prometheus. Shows overall cluster CPU / Memory / Filesystem usage as well as individual pod, containers, systemd services statistics. Uses cAdvisor metrics only.",
+  "editable": true,
+  "gnetId": 315,
+  "graphTooltip": 0,
+  "id": 21,
+  "iteration": 1566469293876,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 63,
+      "panels": [],
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "content": "<br>WORKLOAD: $WorkLoad\n<br>NAMESPACE : $NAMESPACE\n<br>PODs:\n<br>&emsp;&emsp;-- $PODs\n<br>POD_IPs:\n<br>&emsp;&emsp;-- $POD_IP\n<br>HOST_IPs\n<br>&emsp;&emsp;-- $HOST_IP\n<br>HOST_NAMEs:\n<br>&emsp;&emsp;-- $NODE\n\n\n\n\n\n",
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 70,
+      "links": [],
+      "mode": "html",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Resource Info",
+      "type": "text"
+    },
+    {
+      "columns": [],
+      "datasource": "Prometheus",
+      "fontSize": "80%",
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 6,
+        "y": 1
+      },
+      "id": 54,
+      "links": [],
+      "pageSize": null,
+      "scroll": true,
+      "showHeader": true,
+      "sort": {
+        "col": 1,
+        "desc": true
+      },
+      "styles": [
+        {
+          "alias": "Time",
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "pattern": "Time",
+          "type": "hidden"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "decimals": 2,
+          "mappingType": 1,
+          "pattern": "phase",
+          "preserveFormat": false,
+          "thresholds": [],
+          "type": "string",
+          "unit": "short"
+        },
+        {
+          "alias": "",
+          "colorMode": null,
+          "colors": [
+            "rgba(245, 54, 54, 0.9)",
+            "rgba(237, 129, 40, 0.89)",
+            "rgba(50, 172, 45, 0.97)"
+          ],
+          "decimals": 2,
+          "pattern": "/.*/",
+          "thresholds": [],
+          "type": "number",
+          "unit": "short"
+        }
+      ],
+      "targets": [
+        {
+          "expr": "sum (kube_pod_status_phase{pod=~\"$PODs\"}) by (phase)",
+          "format": "table",
+          "instant": true,
+          "intervalFactor": 1,
+          "legendFormat": "{{phase}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "PODs Statuses",
+      "transform": "table",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 52,
+      "panels": [],
+      "title": "Graphs",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "decimals": 3,
+      "editable": true,
+      "error": false,
+      "fill": 8,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "height": "",
+      "id": 17,
+      "isNew": true,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 400,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "alias": "Available CPU cores",
+          "color": "#C4162A",
+          "fill": 0,
+          "linewidth": 3,
+          "stack": false
+        }
+      ],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum (rate (container_cpu_usage_seconds_total{image!=\"\",pod_name=~\"$PODs\"}[1m])) by (pod_name)",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "10s",
+          "intervalFactor": 1,
+          "legendFormat": "{{ pod_name }}",
+          "metric": "container_cpu",
+          "refId": "A",
+          "step": 10
+        },
+        {
+          "expr": "sum (node:node_num_cpu:sum{node=~\"^$Node\"})",
+          "format": "time_series",
+          "hide": true,
+          "instant": false,
+          "interval": "10s",
+          "intervalFactor": 1,
+          "legendFormat": "Available CPU cores",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Pods CPU usage (1m avg)",
+      "tooltip": {
+        "msResolution": true,
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "none",
+          "label": "cores",
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "decimals": 2,
+      "editable": true,
+      "error": false,
+      "fill": 8,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 25,
+      "interval": "10s",
+      "isNew": true,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 400,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 3,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "alias": "Available Memory",
+          "color": "#C4162A",
+          "fill": 0,
+          "legend": true,
+          "linewidth": 3,
+          "stack": false
+        }
+      ],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum (container_memory_working_set_bytes{image!=\"\",name=~\"^k8s_.*\",pod_name=~\"$PODs\"}) by (pod_name)",
+          "format": "time_series",
+          "interval": "10s",
+          "intervalFactor": 1,
+          "legendFormat": "{{ pod_name }}",
+          "metric": "container_memory_usage:sort_desc",
+          "refId": "A",
+          "step": 10
+        },
+        {
+          "expr": "sum(node:node_memory_bytes_total:sum{node=~\"^$Node\"})",
+          "format": "time_series",
+          "hide": true,
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{Available Memory}}",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Pods memory usage",
+      "tooltip": {
+        "msResolution": false,
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "decimals": 2,
+      "editable": true,
+      "error": false,
+      "fill": 8,
+      "grid": {},
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 68,
+      "interval": "10s",
+      "isNew": true,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 400,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "alias": "DiskSpace Total",
+          "color": "#C4162A",
+          "fill": 0,
+          "legend": true,
+          "linewidth": 3,
+          "stack": false
+        }
+      ],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum (container_fs_usage_bytes{device=~\"^/dev/.*\",pod_name=~\"^$PODs\"}) by (pod_name)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{pod_name}}",
+          "refId": "B"
+        },
+        {
+          "expr": "sum (container_fs_limit_bytes{device=~\"^/dev/.*\",id=\"/\",pod_name=~\"^$PODs\"})",
+          "format": "time_series",
+          "hide": true,
+          "intervalFactor": 1,
+          "legendFormat": "{{DiskSpace Total}}",
+          "refId": "C"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Node's DiskSpace [/dev/*]",
+      "tooltip": {
+        "msResolution": false,
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "bytes",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "decimals": 2,
+      "editable": true,
+      "error": false,
+      "fill": 1,
+      "grid": {},
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 16,
+      "isNew": true,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": 400,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [],
+      "nullPointMode": "connected",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum (rate (container_network_receive_bytes_total{pod_name=~\"^$PODs\"}[1m])) by (pod_name)",
+          "format": "time_series",
+          "instant": false,
+          "interval": "10s",
+          "intervalFactor": 1,
+          "legendFormat": "-> {{ pod_name }}",
+          "metric": "network",
+          "refId": "A",
+          "step": 10
+        },
+        {
+          "expr": "- sum (rate (container_network_transmit_bytes_total{pod_name=~\"^$PODs\"}[1m])) by (pod_name)",
+          "format": "time_series",
+          "interval": "10s",
+          "intervalFactor": 1,
+          "legendFormat": "<- {{ pod_name }}",
+          "metric": "network",
+          "refId": "B",
+          "step": 10
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Pods network I/O (1m avg)",
+      "tooltip": {
+        "msResolution": false,
+        "shared": false,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "Bps",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 18,
+  "style": "dark",
+  "tags": [
+    "kubernetes",
+    "test",
+    "ATM"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(kube_pod_info{node=~\"$Node\"}, host_ip)",
+        "hide": 2,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "Instance",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "$__all"
+          }
+        ],
+        "query": "label_values(kube_pod_info{node=~\"$Node\"}, host_ip)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "k8s-node-2.atm.local",
+          "value": "k8s-node-2.atm.local"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(kube_pod_info{host_ip=~\"$Instance\"}, node)",
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "copy_of_Instance",
+        "options": [
+          {
+            "isNone": true,
+            "selected": true,
+            "text": "None",
+            "value": ""
+          }
+        ],
+        "query": "label_values(kube_pod_info{host_ip=~\"$Instance\"}, node)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "elasticsearch-client",
+          "value": "elasticsearch-client"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(kube_deployment_status_replicas, deployment)",
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Deployment",
+        "options": [
+          {
+            "selected": false,
+            "text": "chaos-kube-chaoskube",
+            "value": "chaos-kube-chaoskube"
+          },
+          {
+            "selected": false,
+            "text": "coredns",
+            "value": "coredns"
+          },
+          {
+            "selected": true,
+            "text": "elasticsearch-client",
+            "value": "elasticsearch-client"
+          },
+          {
+            "selected": false,
+            "text": "jenkins",
+            "value": "jenkins"
+          },
+          {
+            "selected": false,
+            "text": "kibana",
+            "value": "kibana"
+          },
+          {
+            "selected": false,
+            "text": "kubernetes-dashboard",
+            "value": "kubernetes-dashboard"
+          },
+          {
+            "selected": false,
+            "text": "metrics-server",
+            "value": "metrics-server"
+          },
+          {
+            "selected": false,
+            "text": "npk-server",
+            "value": "npk-server"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-grafana",
+            "value": "prometheus-grafana"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-kube-state-metrics",
+            "value": "prometheus-kube-state-metrics"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-oper-operator",
+            "value": "prometheus-prometheus-oper-operator"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-metrics",
+            "value": "redis-sentinel-metrics"
+          },
+          {
+            "selected": false,
+            "text": "selenium-hub",
+            "value": "selenium-hub"
+          },
+          {
+            "selected": false,
+            "text": "selenium-node-chrome",
+            "value": "selenium-node-chrome"
+          },
+          {
+            "selected": false,
+            "text": "tiller-deploy",
+            "value": "tiller-deploy"
+          },
+          {
+            "selected": false,
+            "text": "uaa-server",
+            "value": "uaa-server"
+          }
+        ],
+        "query": "label_values(kube_deployment_status_replicas, deployment)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "etcd-k8s-master.atm.local",
+          "value": "etcd-k8s-master.atm.local"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(kube_pod_info, pod)",
+        "hide": 2,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "POD_old",
+        "options": [
+          {
+            "selected": true,
+            "text": "etcd-k8s-master.atm.local",
+            "value": "etcd-k8s-master.atm.local"
+          },
+          {
+            "selected": false,
+            "text": "kube-apiserver-k8s-master.atm.local",
+            "value": "kube-apiserver-k8s-master.atm.local"
+          },
+          {
+            "selected": false,
+            "text": "kube-controller-manager-k8s-master.atm.local",
+            "value": "kube-controller-manager-k8s-master.atm.local"
+          },
+          {
+            "selected": false,
+            "text": "kube-scheduler-k8s-master.atm.local",
+            "value": "kube-scheduler-k8s-master.atm.local"
+          },
+          {
+            "selected": false,
+            "text": "smoke-tests-6838f-1f8wm",
+            "value": "smoke-tests-6838f-1f8wm"
+          },
+          {
+            "selected": false,
+            "text": "smoke-tests-m5nvp-zd420",
+            "value": "smoke-tests-m5nvp-zd420"
+          },
+          {
+            "selected": false,
+            "text": "smoke-tests-r38wz-18chc",
+            "value": "smoke-tests-r38wz-18chc"
+          },
+          {
+            "selected": false,
+            "text": "smoke-tests-wzmmb-5pspv",
+            "value": "smoke-tests-wzmmb-5pspv"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-7dplv",
+            "value": "api-gateway-7dplv"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-sc9h8",
+            "value": "api-gateway-sc9h8"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-vzvkq",
+            "value": "api-gateway-vzvkq"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-92zjp",
+            "value": "api-gateway-92zjp"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-ctbhx",
+            "value": "api-gateway-ctbhx"
+          },
+          {
+            "selected": false,
+            "text": "filebeat-m4clj",
+            "value": "filebeat-m4clj"
+          },
+          {
+            "selected": false,
+            "text": "filebeat-m9vld",
+            "value": "filebeat-m9vld"
+          },
+          {
+            "selected": false,
+            "text": "filebeat-s7p9p",
+            "value": "filebeat-s7p9p"
+          },
+          {
+            "selected": false,
+            "text": "filebeat-zxh69",
+            "value": "filebeat-zxh69"
+          },
+          {
+            "selected": false,
+            "text": "kube-proxy-hwjnn",
+            "value": "kube-proxy-hwjnn"
+          },
+          {
+            "selected": false,
+            "text": "kube-proxy-vj969",
+            "value": "kube-proxy-vj969"
+          },
+          {
+            "selected": false,
+            "text": "kube-proxy-j5l66",
+            "value": "kube-proxy-j5l66"
+          },
+          {
+            "selected": false,
+            "text": "kube-proxy-c97mj",
+            "value": "kube-proxy-c97mj"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-node-exporter-ndd7c",
+            "value": "prometheus-prometheus-node-exporter-ndd7c"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-node-exporter-7dfpb",
+            "value": "prometheus-prometheus-node-exporter-7dfpb"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-node-exporter-7cz4z",
+            "value": "prometheus-prometheus-node-exporter-7cz4z"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-node-exporter-m8rbs",
+            "value": "prometheus-prometheus-node-exporter-m8rbs"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-node-exporter-wczz2",
+            "value": "prometheus-prometheus-node-exporter-wczz2"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-node-exporter-mjx64",
+            "value": "prometheus-prometheus-node-exporter-mjx64"
+          },
+          {
+            "selected": false,
+            "text": "weave-net-2vgcg",
+            "value": "weave-net-2vgcg"
+          },
+          {
+            "selected": false,
+            "text": "weave-net-scttr",
+            "value": "weave-net-scttr"
+          },
+          {
+            "selected": false,
+            "text": "weave-net-b489m",
+            "value": "weave-net-b489m"
+          },
+          {
+            "selected": false,
+            "text": "weave-net-4rj9h",
+            "value": "weave-net-4rj9h"
+          },
+          {
+            "selected": false,
+            "text": "contact-issue-status-update-1565696100-6rgms",
+            "value": "contact-issue-status-update-1565696100-6rgms"
+          },
+          {
+            "selected": false,
+            "text": "contact-issue-status-update-1565696100-q44tq",
+            "value": "contact-issue-status-update-1565696100-q44tq"
+          },
+          {
+            "selected": false,
+            "text": "customers-loader-1566219600-vfwg2",
+            "value": "customers-loader-1566219600-vfwg2"
+          },
+          {
+            "selected": false,
+            "text": "incident-events-loader-1566192900-hm28d",
+            "value": "incident-events-loader-1566192900-hm28d"
+          },
+          {
+            "selected": false,
+            "text": "incident-events-loader-1566192900-qhgt5",
+            "value": "incident-events-loader-1566192900-qhgt5"
+          },
+          {
+            "selected": false,
+            "text": "issue-events-loader-1566192900-bqbls",
+            "value": "issue-events-loader-1566192900-bqbls"
+          },
+          {
+            "selected": false,
+            "text": "issue-events-loader-1566192900-rslsh",
+            "value": "issue-events-loader-1566192900-rslsh"
+          },
+          {
+            "selected": false,
+            "text": "rack-door-events-loader-1565696100-dmqhr",
+            "value": "rack-door-events-loader-1565696100-dmqhr"
+          },
+          {
+            "selected": false,
+            "text": "rack-door-events-loader-1565696100-pvl4l",
+            "value": "rack-door-events-loader-1565696100-pvl4l"
+          },
+          {
+            "selected": false,
+            "text": "chaos-kube-chaoskube-5f58489687-5dltk",
+            "value": "chaos-kube-chaoskube-5f58489687-5dltk"
+          },
+          {
+            "selected": false,
+            "text": "coredns-fb8b8dccf-5gjwg",
+            "value": "coredns-fb8b8dccf-5gjwg"
+          },
+          {
+            "selected": false,
+            "text": "coredns-fb8b8dccf-z9lpv",
+            "value": "coredns-fb8b8dccf-z9lpv"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-client-64c9f98bc4-lgvv6",
+            "value": "elasticsearch-client-64c9f98bc4-lgvv6"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-client-64c9f98bc4-2jvb5",
+            "value": "elasticsearch-client-64c9f98bc4-2jvb5"
+          },
+          {
+            "selected": false,
+            "text": "jenkins-65d987bc-q6fpq",
+            "value": "jenkins-65d987bc-q6fpq"
+          },
+          {
+            "selected": false,
+            "text": "kibana-6c88cdbb5c-8bbg9",
+            "value": "kibana-6c88cdbb5c-8bbg9"
+          },
+          {
+            "selected": false,
+            "text": "kubernetes-dashboard-77fd78f978-vfl5c",
+            "value": "kubernetes-dashboard-77fd78f978-vfl5c"
+          },
+          {
+            "selected": false,
+            "text": "metrics-server-7bddf85f5c-phdtx",
+            "value": "metrics-server-7bddf85f5c-phdtx"
+          },
+          {
+            "selected": false,
+            "text": "npk-server-6b746684ff-mjk5s",
+            "value": "npk-server-6b746684ff-mjk5s"
+          },
+          {
+            "selected": false,
+            "text": "npk-server-6b746684ff-dgcpn",
+            "value": "npk-server-6b746684ff-dgcpn"
+          },
+          {
+            "selected": false,
+            "text": "npk-server-6b746684ff-rj5rp",
+            "value": "npk-server-6b746684ff-rj5rp"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-grafana-8589b465b9-mnggx",
+            "value": "prometheus-grafana-8589b465b9-mnggx"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-kube-state-metrics-685b96ff86-sgnvf",
+            "value": "prometheus-kube-state-metrics-685b96ff86-sgnvf"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-oper-operator-7c499cc79-hdltg",
+            "value": "prometheus-prometheus-oper-operator-7c499cc79-hdltg"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-metrics-68c889dbb9-kkdnz",
+            "value": "redis-sentinel-metrics-68c889dbb9-kkdnz"
+          },
+          {
+            "selected": false,
+            "text": "selenium-hub-d9d5df799-j9dcn",
+            "value": "selenium-hub-d9d5df799-j9dcn"
+          },
+          {
+            "selected": false,
+            "text": "selenium-hub-d9d5df799-s46d2",
+            "value": "selenium-hub-d9d5df799-s46d2"
+          },
+          {
+            "selected": false,
+            "text": "selenium-node-chrome-8496b566c7-sww66",
+            "value": "selenium-node-chrome-8496b566c7-sww66"
+          },
+          {
+            "selected": false,
+            "text": "selenium-node-chrome-8496b566c7-vjzt6",
+            "value": "selenium-node-chrome-8496b566c7-vjzt6"
+          },
+          {
+            "selected": false,
+            "text": "tiller-deploy-6f6fd74b68-b6dwp",
+            "value": "tiller-deploy-6f6fd74b68-b6dwp"
+          },
+          {
+            "selected": false,
+            "text": "uaa-server-6c94d9dcf4-g5hm4",
+            "value": "uaa-server-6c94d9dcf4-g5hm4"
+          },
+          {
+            "selected": false,
+            "text": "uaa-server-6c94d9dcf4-nshw9",
+            "value": "uaa-server-6c94d9dcf4-nshw9"
+          },
+          {
+            "selected": false,
+            "text": "uaa-server-6c94d9dcf4-z7w42",
+            "value": "uaa-server-6c94d9dcf4-z7w42"
+          },
+          {
+            "selected": false,
+            "text": "uaa-server-6c94d9dcf4-6vtpd",
+            "value": "uaa-server-6c94d9dcf4-6vtpd"
+          },
+          {
+            "selected": false,
+            "text": "uaa-server-6c94d9dcf4-6xt48",
+            "value": "uaa-server-6c94d9dcf4-6xt48"
+          },
+          {
+            "selected": false,
+            "text": "uaa-server-6c94d9dcf4-t6n84",
+            "value": "uaa-server-6c94d9dcf4-t6n84"
+          },
+          {
+            "selected": false,
+            "text": "alertmanager-prometheus-prometheus-oper-alertmanager-0",
+            "value": "alertmanager-prometheus-prometheus-oper-alertmanager-0"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-data-0",
+            "value": "elasticsearch-data-0"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-data-1",
+            "value": "elasticsearch-data-1"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-master-1",
+            "value": "elasticsearch-master-1"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-master-0",
+            "value": "elasticsearch-master-0"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-master-2",
+            "value": "elasticsearch-master-2"
+          },
+          {
+            "selected": false,
+            "text": "logstash-0",
+            "value": "logstash-0"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-prometheus-oper-prometheus-0",
+            "value": "prometheus-prometheus-prometheus-oper-prometheus-0"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-master-1",
+            "value": "redis-sentinel-master-1"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-master-0",
+            "value": "redis-sentinel-master-0"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-master-2",
+            "value": "redis-sentinel-master-2"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-slave-0",
+            "value": "redis-sentinel-slave-0"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-slave-1",
+            "value": "redis-sentinel-slave-1"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-slave-2",
+            "value": "redis-sentinel-slave-2"
+          }
+        ],
+        "query": "label_values(kube_pod_info, pod)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "api-gateway",
+          "value": [
+            "api-gateway"
+          ]
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(mixin_pod_workload, workload)",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": true,
+        "name": "WorkLoad",
+        "options": [
+          {
+            "selected": false,
+            "text": "alertmanager-prometheus-prometheus-oper-alertmanager",
+            "value": "alertmanager-prometheus-prometheus-oper-alertmanager"
+          },
+          {
+            "selected": true,
+            "text": "api-gateway",
+            "value": "api-gateway"
+          },
+          {
+            "selected": false,
+            "text": "chaos-kube-chaoskube",
+            "value": "chaos-kube-chaoskube"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-client",
+            "value": "elasticsearch-client"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-data",
+            "value": "elasticsearch-data"
+          },
+          {
+            "selected": false,
+            "text": "elasticsearch-master",
+            "value": "elasticsearch-master"
+          },
+          {
+            "selected": false,
+            "text": "filebeat",
+            "value": "filebeat"
+          },
+          {
+            "selected": false,
+            "text": "jenkins",
+            "value": "jenkins"
+          },
+          {
+            "selected": false,
+            "text": "kibana",
+            "value": "kibana"
+          },
+          {
+            "selected": false,
+            "text": "logstash",
+            "value": "logstash"
+          },
+          {
+            "selected": false,
+            "text": "npk-server",
+            "value": "npk-server"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-grafana",
+            "value": "prometheus-grafana"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-kube-state-metrics",
+            "value": "prometheus-kube-state-metrics"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-node-exporter",
+            "value": "prometheus-prometheus-node-exporter"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-oper-operator",
+            "value": "prometheus-prometheus-oper-operator"
+          },
+          {
+            "selected": false,
+            "text": "prometheus-prometheus-prometheus-oper-prometheus",
+            "value": "prometheus-prometheus-prometheus-oper-prometheus"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-master",
+            "value": "redis-sentinel-master"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-metrics",
+            "value": "redis-sentinel-metrics"
+          },
+          {
+            "selected": false,
+            "text": "redis-sentinel-slave",
+            "value": "redis-sentinel-slave"
+          },
+          {
+            "selected": false,
+            "text": "selenium-hub",
+            "value": "selenium-hub"
+          },
+          {
+            "selected": false,
+            "text": "selenium-node-chrome",
+            "value": "selenium-node-chrome"
+          },
+          {
+            "selected": false,
+            "text": "uaa-server",
+            "value": "uaa-server"
+          },
+          {
+            "selected": false,
+            "text": "coredns",
+            "value": "coredns"
+          },
+          {
+            "selected": false,
+            "text": "kube-proxy",
+            "value": "kube-proxy"
+          },
+          {
+            "selected": false,
+            "text": "kubernetes-dashboard",
+            "value": "kubernetes-dashboard"
+          },
+          {
+            "selected": false,
+            "text": "metrics-server",
+            "value": "metrics-server"
+          },
+          {
+            "selected": false,
+            "text": "tiller-deploy",
+            "value": "tiller-deploy"
+          },
+          {
+            "selected": false,
+            "text": "weave-net",
+            "value": "weave-net"
+          }
+        ],
+        "query": "label_values(mixin_pod_workload, workload)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(mixin_pod_workload{workload=~\"^$WorkLoad\"}, pod)",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "PODs",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "$__all"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-5hzmp",
+            "value": "api-gateway-5hzmp"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-64b4w",
+            "value": "api-gateway-64b4w"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-dxgz5",
+            "value": "api-gateway-dxgz5"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-gc4d5",
+            "value": "api-gateway-gc4d5"
+          },
+          {
+            "selected": false,
+            "text": "api-gateway-zlt5x",
+            "value": "api-gateway-zlt5x"
+          }
+        ],
+        "query": "label_values(mixin_pod_workload{workload=~\"^$WorkLoad\"}, pod)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(kube_pod_info{pod=~\"$PODs\"}, pod_ip)",
+        "hide": 2,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "POD_IP",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "$__all"
+          },
+          {
+            "selected": false,
+            "text": "10.130.7.101",
+            "value": "10.130.7.101"
+          },
+          {
+            "selected": false,
+            "text": "10.130.7.102",
+            "value": "10.130.7.102"
+          },
+          {
+            "selected": false,
+            "text": "10.130.7.105",
+            "value": "10.130.7.105"
+          }
+        ],
+        "query": "label_values(kube_pod_info{pod=~\"$PODs\"}, pod_ip)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(kube_pod_info{pod=~\"$PODs\"}, host_ip)",
+        "hide": 2,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "HOST_IP",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "$__all"
+          },
+          {
+            "selected": false,
+            "text": "10.130.7.101",
+            "value": "10.130.7.101"
+          },
+          {
+            "selected": false,
+            "text": "10.130.7.102",
+            "value": "10.130.7.102"
+          },
+          {
+            "selected": false,
+            "text": "10.130.7.105",
+            "value": "10.130.7.105"
+          }
+        ],
+        "query": "label_values(kube_pod_info{pod=~\"$PODs\"}, host_ip)",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": "",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(kube_pod_info{pod=~\"$PODs\"}, node)",
+        "hide": 2,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "NODE",
+        "options": [],
+        "query": "label_values(kube_pod_info{pod=~\"$PODs\"}, node)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": "",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(kube_pod_info{pod=~\"$PODs\"}, namespace)",
+        "hide": 2,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "NAMESPACE",
+        "options": [],
+        "query": "label_values(kube_pod_info{pod=~\"$PODs\"}, namespace)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "ATM_Workloads_v1",
+  "uid": "gTCyUsdZz",
+  "version": 13
+}
